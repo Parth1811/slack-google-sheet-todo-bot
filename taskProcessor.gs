@@ -1,7 +1,7 @@
 function taskProcessor(row) {
   const lock = LockService.getScriptLock();
   try {
-    if (lock.tryLock(2000)) {
+    if (lock.tryLock(10)) {
       // This is a master processor
 
       let taskId = row;
