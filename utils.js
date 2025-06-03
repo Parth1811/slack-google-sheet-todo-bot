@@ -164,11 +164,7 @@ function getLastRowInColumn(col, startRow) {
   }
 
   // Read values from startRow down through sheetLastRow in the target column
-  const numRowsToCheck = - startRow + 1;
-  const rawValues = SHEET
-    .getRange(startRow, col, numRowsToCheck, 1)
-    .getValues()
-    .map(r => r[0]);  // flatten to a 1D array
+  const numRowsToCheck = sheetLastRow - startRow + 1;
 
   // Scan backward to find the first non-empty cell
   for (let i = sheetLastRow - 1; i >= startRow; i--) {
