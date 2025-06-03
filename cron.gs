@@ -58,34 +58,85 @@ function remainingTaskReport(){
     }
   }
 
-  var message = null;
-  if (pendingTaskList.length > 0){
-    message = "Hey <" + SLACK_USERNAME + ">, these are your pending tasks, don't be lazy and workk hard buddy :people_hugging:\n";
-    for(var i = 0; i < pendingTaskList.length; i++){
-      var dueDate = new Date(pendingTaskList[i].due);
-      var adjustedDate = new Date(dueDate.getTime() + today.getTimezoneOffset() * 60000);
-      adjustedDate.setHours(0,0,0,0);
 
-      var emoji = "";
-      if (adjustedDate < today){
-        emoji = RED_CIRCLE_EMOJI;
-      } else if(adjustedDate > today){
-        emoji = GREEN_CIRCLE_EMOJI;
-      } else {
-        emoji = YELLOW_CIRCLE_EMOJI;
-      }
+  const blocks = [];
 
-      var ending = '\n';
-      if (slackLinkMap.has(pendingTaskList[i].id)) {
-        ending = ' <' + slackLinkMap.get(pendingTaskList[i].id) + '|(link)>' + ending;
-      }
-
-      message += (i+1).toString() + ". :" + emoji + ": " + toFormattedDate(adjustedDate) + ' - ' + pendingTaskList[i].title + ending;
+  // Header
+  blocks.push({
+    type: "header",
+    text: {
+      type: "plain_text",
+      text: `:clipboard: Pending Tasks for ${USERNAME}`,
+      emoji: true
     }
+  });
+
+  blocks.push({
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: `Hey <${SLACK_USERNAME}>, here are your tasks:`
+      }
+    ]
+  });
+
+  blocks.push({ type: "divider" });
+
+
+  // If there are pending tasks, list them; otherwise show a “no tasks” section
+  if (pendingTaskList.length > 0) {
+    pendingTaskList.forEach((task, i) => {
+      const dueDate = new Date(task.due);
+      const adjustedDate = new Date(dueDate.getTime() + today.getTimezoneOffset() * 60000);
+      adjustedDate.setHours(0, 0, 0, 0);
+
+      let emoji = "";
+      if (adjustedDate < today) {
+        emoji = `:${RED_CIRCLE_EMOJI}:`;
+      } else if (adjustedDate > today) {
+        emoji = `:${GREEN_CIRCLE_EMOJI}:`;
+      } else {
+        emoji = `:${YELLOW_CIRCLE_EMOJI}:`;
+      }
+
+      const formattedDate = toFormattedDate(adjustedDate);
+      const linkPart = slackLinkMap.has(task.id)
+        ? ` — <${slackLinkMap.get(task.id)}|View>`
+        : "";
+
+      // Each task as its own “section” block
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*${i + 1}.* ${emoji} *${formattedDate}* — ${task.title}${linkPart}`
+        }
+      });
+    });
   } else {
-    message = "Woah! Congrats:tada: <" + SLACK_USERNAME + ">, you have no pending tasks for today. Keep it up.";
+    // If no pending tasks
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: ":tada: *All caught up!* You have no pending tasks for today."
+      }
+    });
   }
 
+  // Footer/context
+  blocks.push({ type: "divider" });
+  blocks.push({
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: "Keep up the great work! :muscle:"
+      }
+    ]
+  });
+
   // Logger.log(message);
-  sendMessageToSlackChannel(SLACK_CHANNEL_ID, message);
+  sendMessageToSlackChannel(SLACK_CHANNEL_ID, blocks);
 }

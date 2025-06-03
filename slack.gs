@@ -121,7 +121,7 @@ function sendMessageToSlackChannel(channelId, messageText) {
   
   var payload = {
     'channel': channelId,
-    'text': messageText,
+    'blocks': messageText,
     'unfurl_links': false
   };
 
