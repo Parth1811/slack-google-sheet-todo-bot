@@ -168,7 +168,7 @@ function getLastRowInColumn(col, startRow) {
 
   // Scan backward to find the first non-empty cell
   for (let i = sheetLastRow - 1; i >= startRow; i--) {
-    let rawValues = SHEET.getRange(i, col).getValue();
+    let rawValue = SHEET.getRange(i, col).getValue();
     if (rawValue !== '' && rawValue !== null) {
       return i;
     }
